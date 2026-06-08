@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sock Water — Craft Brewery, Montréal</title>
+<meta name="description" content="Sock Water is a small craft brewery based in downtown Montréal, creating beers since 2026." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=JetBrains+Mono:wght@400;500&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #f4efe7;
+    --bg-2: #ece6d9;
+    --ink: #08100a;
+    --ink-soft: #1c2e1e;
+    --muted: #6d5a4e;
+    --line: #c5b4a2;
+    --accent: #3a7bc8;
+    --accent-2: #7eecd8;
+    --accent-3: #7eecd8;
+    --brown: #3d2b1f;
+    --paper: #fdfaf4;
+    --shadow: 0 1px 0 rgba(8,16,10,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  /* ----- NAV ----- */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 1.25rem 2.5rem;
+    background: rgba(244, 239, 231, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--brown);
+    border-radius: 50%;
+    position: relative;
+    display: inline-block;
+  }
+  .logo-mark::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    background: var(--accent-2);
+    border-radius: 50%;
+  }
+  .logo-mark::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0; right: 0;
+    height: 1px;
+    background: var(--brown);
+    z-index: 2;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.92rem;
+    position: relative;
+    transition: opacity 0.2s;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 0; height: 1px;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+  .nav-links a:hover::after { width: 100%; }
+
+  .nav-cta {
+    padding: 0.55rem 1.25rem;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    font-size: 0.88rem;
+    transition: all 0.25s;
+  }
+  .nav-cta:hover {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  /* ----- HERO ----- */
+  .hero {
+    min-height: 100vh;
+    padding: 9rem 2.5rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1.5rem;
+  }
+
+  .hero-meta span:last-child {
+    font-feature-settings: "tnum";
+  }
+
+  .hero-headline {
+    font-size: clamp(2.5rem, 6vw, 6rem);
+    letter-spacing: -0.04em;
+  }
+
+  .hero-headline em {
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 100;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  .hero-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-top: 2rem;
+    align-items: end;
+  }
+
+  .hero-lede {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    line-height: 1.4;
+    grid-column: 2;
+    color: var(--ink-soft);
+    max-width: 32ch;
+  }
+
+  .hero-cta-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.95rem 1.75rem;
+    background: var(--brown);
+    color: var(--bg);
+    border-radius: 999px;
+    font-size: 0.95rem;
+    transition: all 0.25s;
+    border: 1px solid var(--brown);
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+  .btn .arrow { transition: transform 0.25s; }
+  .btn:hover .arrow { transform: translate(2px, -2px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+  .btn-ghost:hover { background: var(--ink); color: var(--bg); }
+
+  .hero::after {
+    content: '01';
+    position: absolute;
+    top: 7rem; right: 2.5rem;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ----- MARQUEE ----- */
+  .marquee {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 1.5rem 0;
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+    background: var(--bg-2);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 4rem;
+    white-space: nowrap;
+    animation: scroll 38s linear infinite;
+    align-items: center;
+  }
+  .marquee-track span {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.5rem;
+    color: var(--ink-soft);
+    opacity: 0.7;
+  }
+  .marquee-track span.star {
+    color: var(--accent);
+    opacity: 1;
+    font-style: normal;
+  }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ----- SECTION SCAFFOLD ----- */
+  section {
+    padding: 7rem 2.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .section-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 1rem;
+    margin-bottom: 4rem;
+    color: var(--muted);
+  }
+
+  .section-heading {
+    font-size: clamp(2.5rem, 6vw, 5.5rem);
+    margin-bottom: 3rem;
+    max-width: 18ch;
+  }
+  .section-heading em {
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 100;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  /* ----- ABOUT ----- */
+  .about {
+    background: var(--bg-2);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+  }
+
+  .about-text p {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    line-height: 1.55;
+    margin-bottom: 1.5rem;
+    color: var(--ink-soft);
+  }
+  .about-text p:first-of-type::first-letter {
+    font-size: 4rem;
+    float: left;
+    line-height: 0.85;
+    padding: 0.4rem 0.6rem 0 0;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .about-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-self: start;
+    padding-top: 1rem;
+  }
+  .stat {
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+  }
+  .stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 3.5rem;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  .stat-num em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+  .stat-label {
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-size: 0.92rem;
+  }
+
+  /* ----- BEERS ----- */
+  .services-list {
+    list-style: none;
+  }
+  .service {
+    border-bottom: 1px solid var(--line);
+    padding: 2.25rem 0;
+    display: grid;
+    grid-template-columns: 60px 1fr 2fr 1fr;
+    gap: 2rem;
+    align-items: center;
+    cursor: pointer;
+    transition: padding 0.3s ease;
+    position: relative;
+  }
+  .service:hover { padding-left: 1.25rem; }
+  .service:hover .service-name { color: var(--accent); }
+  .service::after {
+    content: '→';
+    font-size: 1.4rem;
+    color: var(--muted);
+    transition: all 0.3s;
+    justify-self: end;
+  }
+  .service:hover::after {
+    color: var(--accent);
+    transform: translateX(6px) rotate(-45deg);
+  }
+
+  .service-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 1.1rem;
+  }
+  .service-name {
+    font-family: 'Fraunces', serif;
+    font-size: 2.25rem;
+    letter-spacing: -0.02em;
+    transition: color 0.3s;
+  }
+  .service-desc {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .service-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .service-tags span {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+  }
+
+  /* ----- RELEASES ----- */
+  .work {
+    background: #08100a;
+    color: var(--bg);
+  }
+  .work .section-label { color: rgba(244, 239, 231, 0.6); border-color: rgba(244, 239, 231, 0.15); }
+  .work .section-heading em { color: var(--accent-3); }
+
+  .work-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+  }
+
+  .case {
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 4/3;
+    transition: transform 0.4s ease;
+    cursor: pointer;
+  }
+  .case:hover { transform: translateY(-6px); }
+  .case-1 { grid-column: 1/8; aspect-ratio: 16/10; background: linear-gradient(135deg, #3a7bc8, #1a4d8a); }
+  .case-2 { grid-column: 8/13; background: linear-gradient(160deg, #3d2b1f, #6b3a1f); }
+  .case-3 { grid-column: 1/6; background: linear-gradient(200deg, #1a3018, #0d2010); }
+  .case-4 { grid-column: 6/13; aspect-ratio: 16/10; background: linear-gradient(220deg, #2d6b5c, #1a4540); }
+
+  .case-content {
+    position: absolute;
+    inset: 0;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: var(--bg);
+  }
+  .case-tag {
+    align-self: flex-start;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid rgba(250, 246, 237, 0.4);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .case-title {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .case-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin-top: 0.75rem;
+  }
+
+  .case svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  /* ----- PROCESS ----- */
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    counter-reset: step;
+  }
+  .step {
+    counter-increment: step;
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--ink);
+    position: relative;
+  }
+  .step::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--accent);
+    position: absolute;
+    top: -2rem;
+    left: 0;
+  }
+  .step h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+  .step p { color: var(--muted); font-size: 0.98rem; }
+
+  /* ----- TEAM ----- */
+  .team {
+    background: var(--paper);
+  }
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2rem;
+  }
+  .member {
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    transition: transform 0.3s;
+  }
+  .member:hover { transform: translateY(-4px); }
+  .avatar {
+    aspect-ratio: 4/5;
+    background: var(--bg-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar svg { width: 100%; height: 100%; }
+  .member-info { padding: 1.25rem; }
+  .member-name {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    letter-spacing: -0.01em;
+  }
+  .member-role { color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem; }
+
+  /* ----- TESTIMONIALS ----- */
+  .testimonial-block {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .testimonial {
+    padding: 3rem 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 3rem;
+  }
+  .testimonial:last-child { border-bottom: 1px solid var(--line); }
+  .testimonial-meta { color: var(--muted); }
+  .testimonial-meta strong { color: var(--ink); font-weight: 500; display: block; font-size: 1.05rem; }
+  .testimonial blockquote {
+    font-family: 'Fraunces', serif;
+    font-size: 1.85rem;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--ink-soft);
+  }
+  .testimonial blockquote::before {
+    content: '\201C';
+    font-size: 4rem;
+    color: var(--accent);
+    line-height: 0;
+    position: relative;
+    top: 0.5rem;
+    margin-right: 0.25rem;
+  }
+
+  /* ----- JOURNAL ----- */
+  .journal {
+    background: var(--bg-2);
+  }
+  .journal-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 2.5rem;
+  }
+  .post {
+    border-top: 1px solid var(--ink);
+    padding-top: 1.25rem;
+    cursor: pointer;
+  }
+  .post-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  .post-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.65rem;
+    line-height: 1.15;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.015em;
+    transition: color 0.25s;
+  }
+  .post:hover .post-title { color: var(--accent); }
+  .post-feature .post-title { font-size: 2.5rem; }
+  .post-date { color: var(--muted); font-size: 0.88rem; }
+  .post-excerpt { color: var(--muted); margin: 0.75rem 0; font-size: 0.95rem; }
+
+  /* ----- FAQ ----- */
+  .faq-list { max-width: 850px; margin: 0 auto; }
+  details {
+    border-bottom: 1px solid var(--line);
+    padding: 1.75rem 0;
+  }
+  details summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    letter-spacing: -0.01em;
+    transition: color 0.25s;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after {
+    content: '+';
+    font-size: 1.5rem;
+    transition: transform 0.3s;
+    color: var(--accent);
+  }
+  details[open] summary { color: var(--accent); }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p {
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 1.02rem;
+    line-height: 1.6;
+    max-width: 70ch;
+  }
+
+  /* ----- CAREERS (compact) ----- */
+  .careers-compact {
+    max-width: 680px;
+  }
+  .careers-compact p {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin-bottom: 1.5rem;
+  }
+
+  /* ----- CONTACT ----- */
+  .contact {
+    background: var(--accent);
+    color: var(--paper);
+    padding: 8rem 2.5rem;
+    text-align: center;
+  }
+  .contact h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 2rem;
+  }
+  .contact h2 em {
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 100;
+    font-weight: 300;
+  }
+  .contact-lede {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.4;
+    opacity: 0.95;
+  }
+  .contact .btn {
+    background: var(--paper);
+    color: var(--accent);
+    border-color: var(--paper);
+    font-size: 1.05rem;
+    padding: 1.1rem 2.25rem;
+  }
+  .contact .btn:hover { background: var(--brown); color: var(--paper); border-color: var(--brown); transform: translateY(-2px); }
+
+  .contact-info {
+    margin-top: 4rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    border-top: 1px solid rgba(250, 246, 237, 0.3);
+    padding-top: 3rem;
+    text-align: left;
+  }
+  .contact-info h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+    opacity: 0.7;
+    font-weight: 500;
+  }
+  .contact-info p {
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    line-height: 1.4;
+  }
+
+  /* ----- FOOTER ----- */
+  footer {
+    background: var(--brown);
+    color: var(--bg);
+    padding: 5rem 2.5rem 2rem;
+    position: relative;
+    z-index: 2;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 4rem;
+  }
+  .footer-brand {
+    font-family: 'Fraunces', serif;
+    font-size: 4rem;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+  }
+  .footer-brand em {
+    font-style: italic;
+    font-variation-settings: "opsz" 144, "SOFT" 100;
+    color: var(--accent-3);
+    font-weight: 300;
+  }
+  .footer-brand p {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 0.95rem;
+    margin-top: 1.5rem;
+    opacity: 0.65;
+    max-width: 32ch;
+    letter-spacing: 0;
+  }
+  .footer-col h5 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.55;
+    margin-bottom: 1.25rem;
+    font-weight: 500;
+  }
+  .footer-col ul { list-style: none; }
+  .footer-col li { margin-bottom: 0.6rem; }
+  .footer-col a {
+    font-size: 0.95rem;
+    transition: color 0.25s;
+    opacity: 0.85;
+  }
+  .footer-col a:hover { color: var(--accent-3); opacity: 1; }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(244, 239, 231, 0.12);
+    font-size: 0.85rem;
+    opacity: 0.6;
+  }
+
+  .footer-bottom .social {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  /* ----- ANIMATIONS ----- */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .fade-up.in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .fade-up:nth-child(2) { transition-delay: 0.08s; }
+  .fade-up:nth-child(3) { transition-delay: 0.16s; }
+  .fade-up:nth-child(4) { transition-delay: 0.24s; }
+
+  /* ----- RESPONSIVE ----- */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.25rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.25rem; }
+    .hero { padding: 7rem 1.25rem 3rem; }
+    .hero-bottom { grid-template-columns: 1fr; gap: 1.5rem; }
+    .hero-lede { grid-column: 1; }
+    .hero-cta-group { align-items: flex-start; }
+    .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .process-grid, .team-grid { grid-template-columns: 1fr 1fr; }
+    .journal-grid { grid-template-columns: 1fr; }
+    .work-grid > * { grid-column: 1 / -1 !important; }
+    .service { grid-template-columns: 40px 1fr; gap: 1rem; }
+    .service-desc, .service-tags { display: none; }
+    .testimonial { grid-template-columns: 1fr; gap: 1rem; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .footer-bottom { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+
+  @media (max-width: 500px) {
+    .process-grid, .team-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo"><span class="logo-mark"></span>Sock Water</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#beers">Beers</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Get in Touch</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-meta">
+    <span>Craft Brewery</span>
+    <span>Since 2026</span>
+  </div>
+  <h1 class="hero-headline display">We brew <em>exceptional</em> beer</h1>
+  <div class="hero-bottom">
+    <div class="hero-lede">
+      <p>Sock Water is a small craft brewery based in downtown Montréal, creating beers since 2026.</p>
+    </div>
+    <div class="hero-cta-group">
+      <button class="btn">Explore Beers <span class="arrow">→</span></button>
+      <button class="btn btn-ghost">Learn More</button>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span>Handcrafted</span>
+    <span class="star">★</span>
+    <span>Experimental</span>
+    <span class="star">★</span>
+    <span>Bold Flavors</span>
+    <span class="star">★</span>
+    <span>Local Pride</span>
+    <span class="star">★</span>
+    <span>Handcrafted</span>
+    <span class="star">★</span>
+    <span>Experimental</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="section-label">
+    <span>About Us</span>
+    <span>02</span>
+  </div>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>Founded in 2026, Sock Water represents a new era of brewing in Montréal. We're committed to quality, innovation, and community.</p>
+      <p>Every batch tells a story. Every beer reflects our passion for the craft and our love for this city.</p>
+    </div>
+    <div class="about-stats">
+      <div class="stat">
+        <div class="stat-num"><em>50+</em></div>
+        <div class="stat-label">Unique Recipes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num"><em>15K</em></div>
+        <div class="stat-label">Annual Batches</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BEERS -->
+<section id="beers">
+  <div class="section-label">
+    <span>Our Beers</span>
+    <span>03</span>
+  </div>
+  <h2 class="section-heading display">Explore our <em>collection</em></h2>
+  <ul class="services-list">
+    <li class="service">
+      <span class="service-num">01</span>
+      <span class="service-name">IPA</span>
+      <span class="service-desc">Bold and hoppy, our flagship IPA delivers a perfect balance of citrus and pine notes.</span>
+      <div class="service-tags">
+        <span>Hoppy</span>
+        <span>6.5% ABV</span>
+      </div>
+    </li>
+    <li class="service">
+      <span class="service-num">02</span>
+      <span class="service-name">Stout</span>
+      <span class="service-desc">Rich and creamy with notes of chocolate and coffee, our stout is a work of art.</span>
+      <div class="service-tags">
+        <span>Dark</span>
+        <span>7.2% ABV</span>
+      </div>
+    </li>
+    <li class="service">
+      <span class="service-num">03</span>
+      <span class="service-name">Pilsner</span>
+      <span class="service-desc">Crisp and refreshing, our pilsner is perfect for those warm summer days.</span>
+      <div class="service-tags">
+        <span>Light</span>
+        <span>5.0% ABV</span>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <h2 class="display">Let's connect <em>over</em> a beer</h2>
+  <p class="contact-lede">Visit us at our brewery or reach out to learn more about our craft.</p>
+  <button class="btn">Get In Touch</button>
+  <div class="contact-info">
+    <h4>Location</h4>
+    <p>123 Rue St-Laurent<br>Montréal, QC</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Sock <em>Water</em></div>
+      <p>Handcrafted beer from the heart of Montréal.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Company</h5>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Beers</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Follow</h5>
+      <ul>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">Facebook</a></li>
+        <li><a href="#">Twitter</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Legal</h5>
+      <ul>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 Sock Water Brewery. All rights reserved.</p>
+    <div class="social">
+      <a href="#">↗ Instagram</a>
+      <a href="#">↗ Twitter</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
