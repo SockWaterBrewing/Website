@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  SOCK DRAWER — a navigation template.
+
+  A dresser sits shut. Drag the bottom drawer out (or tap it, or focus it and
+  press Enter / ArrowDown) and it reveals a drawer of neatly packed socks.
+  Every sock has a link embroidered on the leg.
+
+  TO SET THE LINKS: edit the SOCKS array near the top of the <script> at the
+  bottom of this file. One entry per sock — label, href and yarn colours.
+  Add or remove entries freely; the drawer measures itself and gets deeper or
+  shallower to suit, and the grid drops to 3 columns on narrow screens.
+
+  Everything is in this one file — no build step, no dependencies.
+  ============================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sock Water — The Drawer</title>
+<meta name="description" content="Pull open the drawer. Every sock is a link." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #f4efe7;
+    --bg-2: #ece6d9;
+    --ink: #08100a;
+    --muted: #6d5a4e;
+    --line: #c5b4a2;
+    --accent: #3a7bc8;
+    --paper: #fdfaf4;
+
+    /* ---- wood ---- */
+    --wood-1: #6b4b33;
+    --wood-2: #573c28;
+    --wood-3: #432d1e;
+    --wood-edge: #8a6244;
+    --recess: #150d07;
+
+    /* ---- drawer geometry (all the tuning lives here) ---- */
+    --dresser-w: min(700px, 100vw - 2rem);      /* outer width of the dresser  */
+    --rail: clamp(16px, 3.8vw, 26px);           /* drawer side rails           */
+    --front-h: clamp(88px, 19vw, 132px);        /* height of the drawer face   */
+    --tilt: 36deg;        /* how far we look down into the drawer  */
+
+    /* the drawer box is as deep as the socks need it to be, so these two are
+       measured at runtime. The values here are just sane fallbacks. */
+    --proj: 320px;        /* on-screen height of the tilted box    */
+    --travel: 380px;      /* how far the drawer pulls out          */
+
+    --t: 0;               /* 0 = shut, 1 = wide open. JS drives it. */
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* paper grain over everything */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 200;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0.15 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 0.94;
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  /* ============================ NAV ============================ */
+  header.bar {
+    position: relative;
+    z-index: 60;
+    padding: 1.25rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .logo-mark {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--wood-3);
+    box-shadow: inset -6px -6px 0 0 var(--accent);
+  }
+  .bar .mono { color: var(--muted); }
+
+  /* ============================ HERO ============================ */
+  .hero {
+    text-align: center;
+    padding: 4.5rem 1.5rem 2.25rem;
+  }
+  .hero .eyebrow { color: var(--muted); margin-bottom: 1.1rem; }
+  .hero h1 {
+    font-size: clamp(2.6rem, 7vw, 5rem);
+  }
+  .hero p {
+    max-width: 42ch;
+    margin: 1.4rem auto 0;
+    color: var(--muted);
+    font-size: 1.02rem;
+  }
+
+  /* ========================== THE DRESSER ========================== */
+  .stage {
+    /* reserve room so the open drawer never overlaps what's below */
+    padding: 0 1rem calc(var(--travel) + 3rem);
+    display: flex;
+    justify-content: center;
+  }
+
+  .dresser {
+    position: relative;
+    width: var(--dresser-w);
+  }
+
+  /* --- the body of the dresser that sits ABOVE our drawer.
+         It is opaque and stacked on top, which is exactly what
+         hides the inside of the drawer while it is shut. --- */
+  .dresser-upper {
+    position: relative;
+    z-index: 3;
+    /* must be at least as tall as the tilted drawer box, or the socks
+       would poke out above the dresser while it is shut */
+    min-height: calc(var(--proj) + 16px);
+    display: flex;
+    flex-direction: column;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 9px),
+      linear-gradient(180deg, var(--wood-1), var(--wood-2));
+    border-radius: 10px 10px 0 0;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.14),
+      inset 0 -14px 22px rgba(0,0,0,0.34);
+    padding: 0 0 12px;
+  }
+
+  /* the top slab of the dresser */
+  .dresser-top {
+    flex: none;
+    height: clamp(20px, 4.2vw, 30px);
+    border-radius: 10px 10px 4px 4px;
+    background: linear-gradient(180deg, #8a6244, #6b4b33 62%, #4a3220);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.28);
+    position: relative;
+  }
+  .dresser-top::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -7px;
+    height: 7px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.42), rgba(0,0,0,0));
+  }
+
+  /* two decorative shut drawers up top */
+  .fake-drawer {
+    flex: 1 1 auto;
+    min-height: 74px;
+    margin: clamp(8px, 2vw, 14px) var(--rail) 0;
+    border-radius: 6px;
+    background:
+      repeating-linear-gradient(91deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, #7a563c, #5e4029 70%, #4b3320);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.16),
+      inset 0 -2px 6px rgba(0,0,0,0.4),
+      0 3px 8px rgba(0,0,0,0.26);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fake-pull {
+    width: clamp(70px, 18vw, 128px); height: clamp(9px, 1.9vw, 13px);
+    border-radius: 7px;
+    background: linear-gradient(180deg, #d9c7a4, #9c8560 55%, #6d5a3d);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+
+  /* ------------------- the drawer that actually opens ------------------- */
+  .drawer-wrap {
+    position: relative;
+    z-index: 1;                 /* below .dresser-upper — that's the trick */
+    height: var(--front-h);
+    perspective: 1500px;
+    perspective-origin: 50% -40%;
+  }
+
+  /* dark cavity revealed as the drawer leaves the carcass */
+  .cabinet-recess {
+    position: absolute;
+    z-index: 0;
+    top: 0; left: 0; right: 0;
+    height: var(--front-h);
+    background:
+      linear-gradient(180deg, #000 0%, var(--recess) 30%, #241609 100%);
+    box-shadow: inset 0 22px 26px rgba(0,0,0,0.75);
+  }
+
+  .drawer {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transform:
+      translateY(calc(var(--t) * var(--travel)))
+      translateZ(calc(var(--t) * 34px));
+    will-change: transform;
+  }
+  .drawer.animating { transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+  /* ---- the open box of the drawer, tipped away from the viewer ---- */
+  .drawer-box {
+    position: absolute;
+    left: 0; right: 0;
+    bottom: 100%;              /* height comes from the socks inside it */
+    transform-origin: 50% 100%;
+    transform: rotateX(var(--tilt));
+    transform-style: preserve-3d;
+    border-radius: 4px 4px 0 0;
+    border-left: var(--rail) solid transparent;
+    border-right: var(--rail) solid transparent;
+    border-top: clamp(10px, 2.2vw, 16px) solid transparent;
+    background:
+      /* the floor */
+      linear-gradient(180deg, #7d5b3e, #9a7350 40%, #a87f59) padding-box,
+      /* the walls, faked with gradients on the border box */
+      linear-gradient(90deg, #3b2718, #6d4d34 34%, #6d4d34 66%, #3b2718) border-box;
+    background-clip: padding-box, border-box;
+    box-shadow:
+      inset 0 30px 40px rgba(0,0,0,0.5),
+      inset 0 -10px 24px rgba(0,0,0,0.28);
+  }
+
+  /* linen liner on the drawer floor */
+  .drawer-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.05) 0 1px, transparent 1px 5px),
+      linear-gradient(180deg, #efe3cd, #ded0b6);
+    opacity: 0.9;
+  }
+  /* shadow the back wall casts onto the liner */
+  .drawer-box::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,0.42), rgba(0,0,0,0) 24%);
+  }
+
+  /* ------------------------- the socks ------------------------- */
+  .sock-grid {
+    position: relative;
+    padding: clamp(10px, 2.4vw, 18px) clamp(12px, 3.4vw, 26px);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(6px, 1.5vw, 10px) clamp(7px, 1.8vw, 12px);
+    transform-style: preserve-3d;
+    list-style: none;
+  }
+  /* narrow screens: fewer, bigger socks so the embroidery stays readable */
+  @media (max-width: 620px) { .sock-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .sock {
+    display: block;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: translateZ(0) rotate(var(--lean, 0deg));
+    transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), filter 320ms ease;
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.34));
+    outline: none;
+  }
+  .sock:nth-child(odd)  { --lean: -2.5deg; }
+  .sock:nth-child(even) { --lean:  2.5deg; }
+
+  .sock svg { display: block; width: 100%; height: auto; }
+
+  /* the sock lifts out of the drawer toward you */
+  .sock:hover,
+  .sock:focus-visible {
+    transform: translateZ(42px) rotate(0deg) translateY(-4px);
+    filter: drop-shadow(0 18px 16px rgba(0,0,0,0.42));
+  }
+  .sock:focus-visible .sock-outline {
+    stroke: var(--paper);
+    stroke-width: 3;
+    stroke-dasharray: 6 4;
+  }
+  .sock:active { transform: translateZ(24px) rotate(0deg); }
+
+  /* embroidered lettering */
+  .sock text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.8px;
+    text-anchor: middle;
+    fill: var(--thread, #fdfaf4);
+    paint-order: stroke;
+    stroke: rgba(0,0,0,0.34);
+    stroke-width: 3;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  /* while shut, the socks are inert AND visually asleep */
+  .sock-grid[inert] .sock { filter: drop-shadow(0 5px 5px rgba(0,0,0,0.34)) brightness(0.72); }
+
+  /* ------------------------- drawer face ------------------------- */
+  .drawer-front {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    border: 0;
+    border-radius: 0 0 8px 8px;
+    cursor: grab;
+    touch-action: none;
+    color: inherit;
+    font: inherit;
+    background:
+      repeating-linear-gradient(91deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 7px),
+      linear-gradient(180deg, #7a563c, #5e4029 70%, #472f1e);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,0.18),
+      inset 0 -3px 8px rgba(0,0,0,0.45),
+      0 calc(var(--t) * 26px) calc(6px + var(--t) * 34px) rgba(0,0,0,calc(0.18 + var(--t) * 0.24));
+  }
+  .drawer-front:active { cursor: grabbing; }
+  .drawer-front:focus-visible {
+    outline: 3px dashed var(--paper);
+    outline-offset: -8px;
+  }
+
+  .pull {
+    width: clamp(110px, 27vw, 190px); height: clamp(12px, 2.4vw, 17px);
+    border-radius: 9px;
+    background: linear-gradient(180deg, #e6d4b0, #a48c65 52%, #6d5a3d);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.6);
+    position: relative;
+  }
+  .pull::before, .pull::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 13px; height: 24px;
+    transform: translateY(-50%);
+    border-radius: 3px;
+    background: linear-gradient(180deg, #b39a72, #6d5a3d);
+  }
+  .pull::before { left: -6px; }
+  .pull::after  { right: -6px; }
+
+  .front-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(253,250,244,0.62);
+    transition: opacity 300ms ease;
+  }
+  .dresser[data-state="open"] .front-hint { opacity: 0; }
+
+  /* A gentle "pull me" nudge until the user touches it. This lives on the
+     handle, never on .drawer — an animated transform there would outrank
+     the --t transform and pin the drawer shut. */
+  @keyframes nudge {
+    0%, 80%, 100% { transform: translateY(0); }
+    87%           { transform: translateY(8px); }
+    93%           { transform: translateY(2px); }
+  }
+  .drawer:not(.touched) .pull { animation: nudge 4.4s ease-in-out 1.6s infinite; }
+
+  /* the plinth the dresser stands on */
+  /* the plinth sits behind the drawer — an open drawer passes in front of it */
+  .dresser-base {
+    position: relative;
+    z-index: 0;
+    height: 26px;
+    margin: 0 6px;
+    border-radius: 0 0 8px 8px;
+    background: linear-gradient(180deg, #4a3220, #2e1e12);
+    box-shadow: 0 16px 26px rgba(0,0,0,0.3);
+  }
+  .floor-shadow {
+    position: relative;
+    z-index: 0;
+    height: 34px;
+    margin: -6px 22px 0;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 0%, rgba(8,16,10,0.34), rgba(8,16,10,0) 70%);
+  }
+
+  /* =========================== FOOTER =========================== */
+  .colophon {
+    border-top: 1px solid var(--line);
+    padding: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    color: var(--muted);
+  }
+
+  /* =========================== RESPONSIVE =========================== */
+  @media (max-width: 760px) {
+    header.bar, .colophon { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .hero { padding-top: 3rem; }
+    .stage { padding-left: 0.5rem; padding-right: 0.5rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer:not(.touched) .pull { animation: none; }
+    .drawer.animating { transition-duration: 200ms; }
+    .sock { transition-duration: 1ms; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <span class="logo"><span class="logo-mark"></span> Sock Water</span>
+  <span class="mono">Est. 2026 — Montréal</span>
+</header>
+
+<section class="hero">
+  <p class="eyebrow mono">Mind the drawer</p>
+  <h1 class="display">Everything lives<br>in the sock drawer.</h1>
+  <p>Grab the handle and pull. Each pair has somewhere to send you, stitched right into the leg.</p>
+</section>
+
+<div class="stage">
+  <div class="dresser" id="dresser" data-state="closed">
+
+    <div class="dresser-upper">
+      <div class="dresser-top"></div>
+      <div class="fake-drawer"><span class="fake-pull"></span></div>
+      <div class="fake-drawer"><span class="fake-pull"></span></div>
+    </div>
+
+    <div class="drawer-wrap">
+      <div class="cabinet-recess"></div>
+
+      <div class="drawer" id="drawer">
+        <!-- the face comes first in the DOM so that Tab moves from the
+             handle into the socks; z-index still paints it in front -->
+        <button class="drawer-front" id="drawer-front"
+                aria-expanded="false" aria-controls="sock-grid">
+          <span class="pull"></span>
+          <span class="front-hint" id="front-hint">Drag to open</span>
+        </button>
+
+        <div class="drawer-box">
+          <ul class="sock-grid" id="sock-grid" aria-label="Site navigation"><!-- socks injected here --></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="dresser-base"></div>
+    <div class="floor-shadow"></div>
+  </div>
+</div>
+
+<footer class="colophon">
+  <span class="mono">Sock Water Brewing Co.</span>
+  <span class="mono">Template — links to be defined</span>
+</footer>
+
+<!-- shared knit texture -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <defs id="shared-defs">
+    <pattern id="knit" width="7" height="7" patternUnits="userSpaceOnUse">
+      <path d="M0 7 L3.5 0 L7 7" fill="none" stroke="rgba(0,0,0,0.11)" stroke-width="1.1"/>
+    </pattern>
+  </defs>
+</svg>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =====================================================================
+     EDIT ME — one entry per sock, in the order they sit in the drawer.
+     `label`  the words embroidered on the sock (keep it short-ish)
+     `href`   where that sock takes you  (fill these in later)
+     `yarn`   main sock colour
+     `trim`   cuff / heel / toe colour
+     `thread` embroidery thread colour
+     ===================================================================== */
+  var SOCKS = [
+    { label: 'HOME',    href: '#', yarn: '#3a7bc8', trim: '#f4efe7', thread: '#fdfaf4' },
+    { label: 'BEERS',   href: '#', yarn: '#c9552f', trim: '#f0dcc2', thread: '#fdfaf4' },
+    { label: 'TAPROOM', href: '#', yarn: '#2f6b4f', trim: '#e8dcc0', thread: '#fdfaf4' },
+    { label: 'EVENTS',  href: '#', yarn: '#e0b13c', trim: '#4b3320', thread: '#2b1c10' },
+    { label: 'SHOP',    href: '#', yarn: '#7e5aa8', trim: '#efe4d2', thread: '#fdfaf4' },
+    { label: 'ABOUT',   href: '#', yarn: '#d8d2c4', trim: '#4b3320', thread: '#2b1c10' },
+    { label: 'JOURNAL', href: '#', yarn: '#1f2f3d', trim: '#7eecd8', thread: '#fdfaf4' },
+    { label: 'CONTACT', href: '#', yarn: '#7eecd8', trim: '#1f2f3d', thread: '#12241f' }
+  ];
+
+  /* silhouette of one sock, lying flat, cuff up, foot to the right */
+  var BODY = 'M36,10 H90 C94.4,10 98,13.6 98,18 V100 ' +
+             'C98,113 106,120 117,124 C127,128 126,142 114,144 ' +
+             'L60,144 C42,144 28,131 28,113 V18 C28,13.6 31.6,10 36,10 Z';
+
+  var grid    = document.getElementById('sock-grid');
+  var dresser = document.getElementById('dresser');
+  var drawer  = document.getElementById('drawer');
+  var front   = document.getElementById('drawer-front');
+
+  /* ---------------------------- build socks ---------------------------- */
+  SOCKS.forEach(function (sock, i) {
+    var clip = 'sock-clip-' + i;
+    var li = document.createElement('li');
+    li.innerHTML =
+      '<a class="sock" href="' + sock.href + '" style="--thread:' + sock.thread + '">' +
+        '<svg viewBox="0 0 130 158" role="img" aria-label="' + sock.label + '">' +
+          '<defs><clipPath id="' + clip + '"><path d="' + BODY + '"/></clipPath></defs>' +
+          '<g clip-path="url(#' + clip + ')">' +
+            '<path d="' + BODY + '" fill="' + sock.yarn + '"/>' +
+            /* ribbed cuff */
+            '<rect x="0" y="0" width="130" height="32" fill="' + sock.trim + '"/>' +
+            '<rect x="0" y="0" width="130" height="32" fill="url(#knit)"/>' +
+            '<rect x="0" y="32" width="130" height="4" fill="rgba(0,0,0,0.16)"/>' +
+            /* reinforced heel + toe */
+            '<circle cx="30" cy="116" r="36" fill="' + sock.trim + '" opacity="0.92"/>' +
+            '<circle cx="122" cy="136" r="28" fill="' + sock.trim + '" opacity="0.92"/>' +
+            /* knit texture over the whole thing */
+            '<rect x="0" y="0" width="130" height="158" fill="url(#knit)"/>' +
+            /* light from the front of the drawer */
+            '<rect x="0" y="0" width="130" height="158" fill="url(#sock-shade)"/>' +
+          '</g>' +
+          '<path class="sock-outline" d="' + BODY + '" fill="none" ' +
+                'stroke="rgba(0,0,0,0.3)" stroke-width="1.6" stroke-dasharray="4 3.5"/>' +
+          '<text x="63" y="72">' + sock.label + '</text>' +
+          '<line x1="36" y1="82" x2="90" y2="82" stroke="' + sock.thread + '" ' +
+                'stroke-width="1.6" stroke-dasharray="3 4" opacity="0.75"/>' +
+        '</svg>' +
+      '</a>';
+    grid.appendChild(li);
+  });
+
+  /* gradient used to shade every sock (declared once) */
+  var shade = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+  shade.setAttribute('id', 'sock-shade');
+  shade.setAttribute('x1', '0'); shade.setAttribute('y1', '0');
+  shade.setAttribute('x2', '0'); shade.setAttribute('y2', '1');
+  shade.innerHTML =
+    '<stop offset="0" stop-color="rgba(0,0,0,0.34)"/>' +
+    '<stop offset="0.45" stop-color="rgba(0,0,0,0)"/>' +
+    '<stop offset="1" stop-color="rgba(255,255,255,0.14)"/>';
+  document.getElementById('shared-defs').appendChild(shade);
+
+  /* shrink any label that overflows the leg of the sock */
+  function fitLabels() {
+    grid.querySelectorAll('text').forEach(function (t) {
+      var max = 60, size = 15;
+      t.style.fontSize = size + 'px';
+      var w = t.getComputedTextLength();
+      if (w > max) {
+        t.style.fontSize = Math.max(7.5, size * (max / w)).toFixed(2) + 'px';
+      }
+    });
+  }
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { fitLabels(); measure(); });
+  } else {
+    window.addEventListener('load', function () { fitLabels(); measure(); });
+  }
+  fitLabels();
+
+  /* ------------------------- open / close state ------------------------- */
+  var t = 0;              /* 0 shut … 1 open */
+  var OPEN_AT = 0.6;      /* socks become clickable past this point */
+
+  function render(next, animate) {
+    t = Math.min(1, Math.max(0, next));
+    if (t > 0) drawer.classList.add('touched');
+    drawer.classList.toggle('animating', !!animate);
+    dresser.style.setProperty('--t', t.toFixed(4));
+
+    var open = t >= OPEN_AT;
+    dresser.dataset.state = open ? 'open' : 'closed';
+    front.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) grid.removeAttribute('inert');
+    else grid.setAttribute('inert', '');
+  }
+
+  function toggle() { render(t >= 0.5 ? 0 : 1, true); }
+
+  /* --------------------------- measure the box ---------------------------
+     The drawer is exactly as deep as the socks it holds, so how far it has
+     to travel — and how tall the dresser above it must be to hide it while
+     shut — both fall out of the laid-out height of .drawer-box.           */
+  var boxEl = document.querySelector('.drawer-box');
+  var root  = document.documentElement;
+  var travel = 380;
+
+  function measure() {
+    var tilt = parseFloat(getComputedStyle(dresser).getPropertyValue('--tilt')) || 36;
+    var proj = Math.round(boxEl.offsetHeight * Math.cos(tilt * Math.PI / 180));
+    if (!proj) return;
+    travel = proj + 52;                       /* + a sliver of empty carcass */
+    root.style.setProperty('--proj', proj + 'px');
+    root.style.setProperty('--travel', travel + 'px');
+  }
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(measure, 120);
+  });
+
+  /* ------------------------------ dragging ------------------------------ */
+  var dragging = false, startY = 0, startT = 0,
+      moved = 0, lastY = 0, lastTime = 0, velocity = 0;
+
+  front.addEventListener('pointerdown', function (e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    dragging = true;
+    drawer.classList.add('touched');
+    drawer.classList.remove('animating');
+    startY = lastY = e.clientY;
+    startT = t;
+    moved = 0;
+    velocity = 0;
+    lastTime = e.timeStamp;
+    front.setPointerCapture(e.pointerId);
+  });
+
+  front.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    var dy = e.clientY - startY;
+    moved = Math.max(moved, Math.abs(dy));
+
+    var dt = e.timeStamp - lastTime;
+    if (dt > 0) velocity = (e.clientY - lastY) / dt;             /* px per ms */
+    lastY = e.clientY;
+    lastTime = e.timeStamp;
+
+    render(startT + dy / travel, false);
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    if (e.pointerId !== undefined && front.hasPointerCapture(e.pointerId)) {
+      front.releasePointerCapture(e.pointerId);
+    }
+
+    /* a tap, not a drag → treat it as a toggle */
+    if (moved < 6) { toggle(); return; }
+
+    /* flick wins; otherwise snap to whichever end is nearer */
+    if (velocity > 0.35)       render(1, true);
+    else if (velocity < -0.35) render(0, true);
+    else                       render(t > 0.45 ? 1 : 0, true);
+  }
+  front.addEventListener('pointerup', endDrag);
+  front.addEventListener('pointercancel', endDrag);
+
+  /* prevent the button's synthetic click from double-toggling after a drag */
+  front.addEventListener('click', function (e) { e.preventDefault(); });
+
+  /* ------------------------------ keyboard ------------------------------ */
+  front.addEventListener('keydown', function (e) {
+    var step = e.shiftKey ? 0.5 : 0.2;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault(); drawer.classList.add('touched'); toggle();
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault(); drawer.classList.add('touched'); render(t + step, true);
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault(); drawer.classList.add('touched'); render(t - step, true);
+    } else if (e.key === 'Home') {
+      e.preventDefault(); render(0, true);
+    } else if (e.key === 'End') {
+      e.preventDefault(); render(1, true);
+    } else if (e.key === 'Escape') {
+      render(0, true);
+    }
+  });
+
+  /* shut the drawer with Escape from anywhere inside it */
+  grid.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { render(0, true); front.focus(); }
+  });
+
+  measure();
+  render(0, false);
+})();
+</script>
+</body>
+</html>
